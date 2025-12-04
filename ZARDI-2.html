@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>NARO Coffee Adoption Dashboard (Per-ZARDI Access)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --accent: #16a34a;
+      --accent-soft: rgba(22, 163, 74, 0.08);
+      --danger: #dc2626;
+      --warning: #f59e0b;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --border-subtle: #e2e8f0;
+      --radius-lg: 16px;
+      --shadow-soft: 0 10px 25px rgba(15, 23, 42, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Times New Roman", Times, serif;
+      background: radial-gradient(circle at top left, #ffffff, #e5e9f5);
+      color: var(--text-main);
+      min-height: 100vh;
+    }
+
+    .app {
+      max-width: 1200px;
+      margin: 16px auto 24px;
+      padding: 0 16px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #facc15, #f97316);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      font-size: 22px;
+    }
+
+    .brand-title {
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+
+    .brand-sub {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    .filters select,
+    .filters input {
+      background: #ffffff;
+      border: 1px solid var(--border-subtle);
+      border-radius: 999px;
+      padding: 6px 10px;
+      color: var(--text-main);
+      font-size: 0.8rem;
+      min-width: 120px;
+    }
+
+    .filters input::placeholder {
+      color: #9ca3af;
+    }
+
+    .pill {
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #ffffff;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-soft);
+      padding: 12px 14px 14px;
+      margin-top: 8px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: flex-start;
+    }
+
+    .card-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .card-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .card-note {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+      line-height: 1.3;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      background: var(--accent-soft);
+      color: #166534;
+    }
+
+    .btn {
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      font-size: 0.8rem;
+      padding: 6px 12px;
+      cursor: pointer;
+      background: #ffffff;
+      color: var(--text-main);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: background 0.1s ease, box-shadow 0.1s ease, transform 0.05s ease;
+      font-family: "Times New Roman", Times, serif;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      border-color: #16a34a;
+      color: #ffffff;
+    }
+
+    .btn-secondary {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+      color: #1d4ed8;
+    }
+
+    .btn-tertiary {
+      background: #fef9c3;
+      border-color: #facc15;
+      color: #92400e;
+    }
+
+    .btn:hover {
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.15);
+    }
+
+    /* ZARDI access cards */
+    .zardi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 1100px) {
+      .zardi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .zardi-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .zardi-card {
+      background: #f9fafb;
+      border-radius: 14px;
+      border: 1px solid #e5e7eb;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      cursor: pointer;
+      transition: box-shadow 0.12s ease, transform 0.05s ease, border-color 0.12s ease;
+    }
+
+    .zardi-card:hover {
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+      transform: translateY(-1px);
+      border-color: #d1d5db;
+    }
+
+    .zardi-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .zardi-name {
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .zardi-tag {
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+      white-space: nowrap;
+    }
+
+    .zardi-source {
+      font-size: 0.7rem;
+      white-space: nowrap;
+    }
+
+    .zardi-body {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .zardi-note {
+      line-height: 1.3;
+    }
+
+    .zardi-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .zardi-card button {
+      font-size: 0.75rem;
+      padding: 4px 10px;
+    }
+
+    .zardi-all {
+      background: #fff7ed;
+      border-color: #fed7aa;
+    }
+
+    .zardi-all:hover {
+      border-color: #fdba74;
+    }
+
+    /* Main grid (analysis section) */
+    .grid-main {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1.5fr);
+      gap: 16px;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 900px) {
+      .grid-main {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    @media (max-width: 900px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .kpi {
+      background: #f9fafb;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      padding: 10px 10px;
+    }
+
+    .kpi-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .kpi-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .kpi-delta {
+      font-size: 0.7rem;
+      margin-top: 2px;
+      color: var(--text-muted);
+    }
+
+    .kpi-delta.good {
+      color: var(--accent);
+    }
+
+    .kpi-delta.bad {
+      color: var(--danger);
+    }
+
+    .chart-wrap {
+      height: 220px;
+      margin-bottom: 6px;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 100% !important;
+      font-family: "Times New Roman", Times, serif !important;
+    }
+
+    .mini-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .mini-meta span strong {
+      color: var(--text-main);
+    }
+
+    /* Adoption score legend */
+    .score-legend {
+      margin-top: 6px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .legend-title {
+      font-weight: 600;
+    }
+
+    .legend-pill {
+      border-radius: 999px;
+      padding: 2px 8px;
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
+      white-space: nowrap;
+    }
+
+    .legend-low {
+      background: #fee2e2;
+      border-color: #ef4444;
+      color: #b91c1c;
+    }
+
+    .legend-med {
+      background: #fef9c3;
+      border-color: #facc15;
+      color: #92400e;
+    }
+
+    .legend-high {
+      background: #dcfce7;
+      border-color: #16a34a;
+      color: #166534;
+    }
+
+    .table-wrap {
+      margin-top: 8px;
+      max-height: 360px;
+      overflow: auto;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+
+    thead {
+      position: sticky;
+      top: 0;
+      background: #eff6ff;
+      z-index: 1;
+    }
+
+    th,
+    td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #f9fafb;
+    }
+
+    .risk-pill {
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      display: inline-block;
+    }
+
+    .risk-high {
+      background: #fee2e2;
+      border: 1px solid #ef4444;
+      color: #b91c1c;
+    }
+
+    .risk-medium {
+      background: #fef9c3;
+      border: 1px solid #facc15;
+      color: #92400e;
+    }
+
+    .risk-low {
+      background: #dcfce7;
+      border: 1px solid #16a34a;
+      color: #166534;
+    }
+
+    .practice-cell {
+      display: flex;
+      gap: 3px;
+      flex-wrap: wrap;
+    }
+
+    .practice-tag {
+      padding: 1px 5px;
+      border-radius: 999px;
+      font-size: 0.65rem;
+      border: 1px solid #d1d5db;
+      color: var(--text-muted);
+      background: #f9fafb;
+    }
+
+    .practice-ok {
+      border-color: #16a34a;
+      color: #166534;
+      background: #dcfce7;
+    }
+
+    .practice-gap {
+      border-color: #ef4444;
+      color: #b91c1c;
+      background: #fee2e2;
+    }
+
+    .footer {
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px solid #e5e7eb;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .footer strong {
+      font-weight: 800;
+      color: #111827;
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <div class="brand-icon">☕</div>
+      <div>
+        <div class="brand-title">NARO Coffee KR1–KR10 Adoption Dashboard</div>
+        <div class="brand-sub">
+          Card-based access per ZARDI (Mukono, Mbarara, Bulindi) with a separate analysis section.
+        </div>
+      </div>
+    </div>
+    <div class="filters">
+      <div class="pill"><span class="dot"></span> Live demo · Local data</div>
+      <select id="zardiFilter">
+        <option value="ALL">All ZARDIs</option>
+        <option value="Mukono">Mukono</option>
+        <option value="Mbarara">Mbarara</option>
+        <option value="Bulindi">Bulindi</option>
+      </select>
+      <select id="riskFilter">
+        <option value="ALL">All risk levels</option>
+        <option value="High">High risk</option>
+        <option value="Medium">Medium risk</option>
+        <option value="Low">Low risk</option>
+      </select>
+      <input id="searchInput" type="text" placeholder="Search farmer / parish…" />
+    </div>
+  </header>
+
+  <!-- SEGMENT 1: ZARDI ACCESS & UPLOADS -->
+  <section class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">ZARDI Data Access & Uploads</div>
+        <div class="card-sub">
+          Use these cards to work with synthetic or real CSV data for each ZARDI.
+          The analysis section below updates automatically.
+        </div>
+      </div>
+    </div>
+
+    <div class="zardi-grid">
+      <!-- All ZARDIs card -->
+      <div class="zardi-card zardi-all" id="card-ALL">
+        <div class="zardi-header">
+          <div class="zardi-name">All ZARDIs (combined view)</div>
+          <div class="zardi-tag">View only</div>
+        </div>
+        <div class="zardi-body">
+          <p class="zardi-note">
+            Show or download the combined households for Mukono, Mbarara, and Bulindi.
+          </p>
+          <div class="zardi-actions">
+            <button class="btn btn-secondary" id="btnAllView">Focus dashboard here</button>
+            <button class="btn btn-tertiary" id="btnAllDownload">Download all data (CSV)</button>
+            <button class="btn btn-primary" id="btnAllDemo">Reset all to demo data</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mukono card -->
+      <div class="zardi-card" id="card-Mukono">
+        <div class="zardi-header">
+          <div class="zardi-name">Mukono ZARDI</div>
+          <span class="zardi-source badge" id="label-Mukono">Synthetic demo data</span>
+        </div>
+        <div class="zardi-body">
+          <p class="zardi-note">
+            Upload Mukono households CSV or use the built-in synthetic dataset.
+          </p>
+          <div class="zardi-actions">
+            <button class="btn btn-primary" data-zardi="Mukono" data-action="demo">Use demo</button>
+            <button class="btn btn-secondary" data-zardi="Mukono" data-action="upload">Upload CSV</button>
+            <button class="btn btn-tertiary" data-zardi="Mukono" data-action="download">Download CSV</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mbarara card -->
+      <div class="zardi-card" id="card-Mbarara">
+        <div class="zardi-header">
+          <div class="zardi-name">Mbarara ZARDI</div>
+          <span class="zardi-source badge" id="label-Mbarara">Synthetic demo data</span>
+        </div>
+        <div class="zardi-body">
+          <p class="zardi-note">
+            Upload Mbarara households CSV or use the demo synthetic data.
+          </p>
+          <div class="zardi-actions">
+            <button class="btn btn-primary" data-zardi="Mbarara" data-action="demo">Use demo</button>
+            <button class="btn btn-secondary" data-zardi="Mbarara" data-action="upload">Upload CSV</button>
+            <button class="btn btn-tertiary" data-zardi="Mbarara" data-action="download">Download CSV</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bulindi card -->
+      <div class="zardi-card" id="card-Bulindi">
+        <div class="zardi-header">
+          <div class="zardi-name">Bulindi ZARDI</div>
+          <span class="zardi-source badge" id="label-Bulindi">Synthetic demo data</span>
+        </div>
+        <div class="zardi-body">
+          <p class="zardi-note">
+            Upload Bulindi households CSV or use the demo synthetic data.
+          </p>
+          <div class="zardi-actions">
+            <button class="btn btn-primary" data-zardi="Bulindi" data-action="demo">Use demo</button>
+            <button class="btn btn-secondary" data-zardi="Bulindi" data-action="upload">Upload CSV</button>
+            <button class="btn btn-tertiary" data-zardi="Bulindi" data-action="download">Download CSV</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <input type="file" id="fileInput" accept=".csv" style="display:none" />
+
+    <p class="card-note">
+      <strong>CSV format (header row required):</strong><br/>
+      <code>id,farmerName,gender,zardi,parish,riskLevel,adoptionScore,stumping,rejuvenation,shade,fertilizer,pests,visitedThisSeason,lastVisit,nextAction</code><br/>
+      For ZARDI-specific uploads, the <code>zardi</code> column may be present but will be forced to the selected ZARDI.
+      Boolean fields can be <code>true/false</code>, <code>yes/no</code>, or <code>1/0</code>.
+    </p>
+
+    <!-- CSV PREVIEW SECTION -->
+    <div id="csvPreviewContainer" style="margin-top:10px; display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+        <span id="csvPreviewTitle" class="badge">CSV preview (first rows)</span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-primary" id="btnConfirmLoad">Use this CSV in dashboard</button>
+          <button class="btn" id="btnCancelPreview">Cancel</button>
+        </div>
+      </div>
+      <div class="table-wrap" style="max-height:200px;">
+        <table>
+          <thead id="csvPreviewHead"></thead>
+          <tbody id="csvPreviewBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEGMENT 2: ANALYSIS & TARGETING OUTPUTS -->
+  <main class="grid-main">
+    <!-- LEFT: KPIs + charts -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Extension Targeting – Analysis Outputs</div>
+          <div class="card-sub">
+            Overview of households, risk distribution, and visit coverage for the selected filters.
+          </div>
+        </div>
+        <div style="font-size:0.78rem;color:var(--text-muted);max-width:210px;">
+          Data source: per-ZARDI CSV uploads and/or KR1–KR10 synthetic baseline/follow-up demo datasets.
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="kpi-label">Total households</div>
+          <div class="kpi-value" id="kpiHouseholds">0</div>
+          <div class="kpi-delta" id="kpiZardiLabel">All ZARDIs</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">High-risk households</div>
+          <div class="kpi-value" id="kpiHighRisk">0</div>
+          <div class="kpi-delta bad" id="kpiHighRiskPct">0% of sample</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Avg. adoption score</div>
+          <div class="kpi-value" id="kpiAdoptionScore">0</div>
+          <div class="kpi-delta" id="kpiAdoptionComment">–</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Visited this season</div>
+          <div class="kpi-value" id="kpiCoverage">0%</div>
+          <div class="kpi-delta" id="kpiCoverageText">0 / 0 households visited</div>
+        </div>
+      </div>
+
+      <div class="chart-wrap">
+        <canvas id="riskChart"></canvas>
+      </div>
+
+      <div class="mini-meta">
+        <span>Most common gaps: <strong id="metaTopGap">–</strong></span>
+        <span>Median adoption score: <strong id="metaMedianScore">–</strong></span>
+        <span>Filter summary: <strong id="metaFilterSummary">All ZARDIs · All risks</strong></span>
+      </div>
+
+      <div class="score-legend">
+        <span class="legend-title">Adoption score legend:</span>
+        <span class="legend-pill legend-low">0–49 · Low</span>
+        <span class="legend-pill legend-med">50–74 · Moderate</span>
+        <span class="legend-pill legend-high">75–100 · Good</span>
+      </div>
+    </section>
+
+    <!-- RIGHT: ZARDI chart + table -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">ZARDI & Household Prioritisation</div>
+          <div class="card-sub">
+            Compliance overview by ZARDI and prioritised list of households for follow-up visits.
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-wrap" style="height:180px;">
+        <canvas id="zardiChart"></canvas>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+          <tr>
+            <th>Farmer</th>
+            <th>ZARDI</th>
+            <th>Parish</th>
+            <th>Risk</th>
+            <th>Adoption</th>
+            <th>Practices</th>
+            <th>Last visit</th>
+            <th>Next action</th>
+          </tr>
+          </thead>
+          <tbody id="householdTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div class="footer">
+    <strong>Developed and Designed by Dr. Michael Adelani Adewusi of Kampala International University, Uganda</strong>
+    <br/>
+    Demo only – connect this dashboard to NARO/UCSATP datasets and predictive model outputs for live deployment.
+  </div>
+</div>
+
+<script>
+  const ZARDIS = ["Mukono", "Mbarara", "Bulindi"];
+
+  // ---------------- DEMO SYNTHETIC DATA ----------------
+  function loadSyntheticHouseholds() {
+    return [
+      {
+        id: 1,
+        farmerName: "Nakato Sarah",
+        gender: "F",
+        zardi: "Mukono",
+        parish: "Nakifuma",
+        riskLevel: "High",
+        adoptionScore: 38,
+        practices: { stumping: false, rejuvenation: false, shade: true, fertilizer: false, pests: false },
+        visitedThisSeason: false,
+        lastVisit: "2024-10-05",
+        nextAction: "Reinforce stumping & fertilizer schedule"
+      },
+      {
+        id: 2,
+        farmerName: "Kato Moses",
+        gender: "M",
+        zardi: "Mukono",
+        parish: "Nagojje",
+        riskLevel: "Medium",
+        adoptionScore: 57,
+        practices: { stumping: true, rejuvenation: false, shade: true, fertilizer: true, pests: false },
+        visitedThisSeason: true,
+        lastVisit: "2024-11-12",
+        nextAction: "Check rejuvenation timing & pest control"
+      },
+      {
+        id: 3,
+        farmerName: "Akello Grace",
+        gender: "F",
+        zardi: "Mbarara",
+        parish: "Kagongi",
+        riskLevel: "Low",
+        adoptionScore: 82,
+        practices: { stumping: true, rejuvenation: true, shade: true, fertilizer: true, pests: true },
+        visitedThisSeason: true,
+        lastVisit: "2024-11-20",
+        nextAction: "Monitor yield & record performance"
+      },
+      {
+        id: 4,
+        farmerName: "Byaruhanga John",
+        gender: "M",
+        zardi: "Mbarara",
+        parish: "Rubindi",
+        riskLevel: "High",
+        adoptionScore: 41,
+        practices: { stumping: false, rejuvenation: false, shade: false, fertilizer: true, pests: false },
+        visitedThisSeason: false,
+        lastVisit: "2024-09-18",
+        nextAction: "Full KR pathway reinforcement visit"
+      },
+      {
+        id: 5,
+        farmerName: "Namatovu Rose",
+        gender: "F",
+        zardi: "Bulindi",
+        parish: "Kyankwanzi",
+        riskLevel: "Medium",
+        adoptionScore: 63,
+        practices: { stumping: true, rejuvenation: true, shade: false, fertilizer: true, pests: true },
+        visitedThisSeason: true,
+        lastVisit: "2024-11-05",
+        nextAction: "Support shade integration for resilience"
+      },
+      {
+        id: 6,
+        farmerName: "Mugisha Peter",
+        gender: "M",
+        zardi: "Bulindi",
+        parish: "Kiryandongo",
+        riskLevel: "High",
+        adoptionScore: 34,
+        practices: { stumping: false, rejuvenation: false, shade: false, fertilizer: false, pests: false },
+        visitedThisSeason: false,
+        lastVisit: "2024-08-29",
+        nextAction: "Priority household – full agronomic package"
+      },
+      {
+        id: 7,
+        farmerName: "Achen Mary",
+        gender: "F",
+        zardi: "Mukono",
+        parish: "Nakisunga",
+        riskLevel: "Low",
+        adoptionScore: 79,
+        practices: { stumping: true, rejuvenation: true, shade: true, fertilizer: true, pests: true },
+        visitedThisSeason: true,
+        lastVisit: "2024-11-24",
+        nextAction: "Include in demonstration plot for peer learning"
+      },
+      {
+        id: 8,
+        farmerName: "Rwot David",
+        gender: "M",
+        zardi: "Mbarara",
+        parish: "Mwizi",
+        riskLevel: "Medium",
+        adoptionScore: 55,
+        practices: { stumping: true, rejuvenation: false, shade: false, fertilizer: true, pests: true },
+        visitedThisSeason: false,
+        lastVisit: "2024-10-02",
+        nextAction: "Visit to reinforce shade & rejuvenation"
+      }
+    ];
+  }
+
+  // ---------------- STATE ----------------
+  const state = {
+    defaultSynthetic: [],
+    zardiData: {},          // { Mukono: {households:[], sourceLabel:""}, ... }
+    allHouseholds: [],
+    filteredHouseholds: [],
+    riskChart: null,
+    zardiChart: null,
+    pendingHouseholds: null,
+    pendingFileName: "",
+    pendingZardi: null
+  };
+
+  // ---------------- CSV HELPERS ----------------
+  function parseBool(val) {
+    if (val === undefined || val === null) return false;
+    const v = String(val).trim().toLowerCase();
+    return v === "1" || v === "true" || v === "yes" || v === "y";
+  }
+
+  function parseCsvToHouseholds(csvText, forceZardi) {
+    const lines = csvText.split(/\r?\n/).filter(l => l.trim().length > 0);
+    if (!lines.length) return [];
+    const header = lines[0].split(",").map(h => h.trim());
+    const rows = lines.slice(1);
+
+    const get = (obj, key) => (obj[key] !== undefined ? obj[key] : "");
+
+    const households = rows.map((line, idx) => {
+      const parts = line.split(",");
+      const obj = {};
+      header.forEach((key, i) => {
+        obj[key] = (parts[i] || "").trim();
+      });
+
+      const zardiValue = forceZardi || get(obj, "zardi") || "";
+
+      return {
+        id: Number(get(obj, "id") || idx + 1),
+        farmerName: get(obj, "farmerName") || "",
+        gender: get(obj, "gender") || "",
+        zardi: zardiValue,
+        parish: get(obj, "parish") || "",
+        riskLevel: get(obj, "riskLevel") || "Medium",
+        adoptionScore: Number(get(obj, "adoptionScore") || 0),
+        practices: {
+          stumping: parseBool(get(obj, "stumping")),
+          rejuvenation: parseBool(get(obj, "rejuvenation")),
+          shade: parseBool(get(obj, "shade")),
+          fertilizer: parseBool(get(obj, "fertilizer")),
+          pests: parseBool(get(obj, "pests"))
+        },
+        visitedThisSeason: parseBool(get(obj, "visitedThisSeason")),
+        lastVisit: get(obj, "lastVisit") || "",
+        nextAction: get(obj, "nextAction") || ""
+      };
+    });
+
+    return households;
+  }
+
+  function buildCsvPreview(text, maxRows = 5) {
+    const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+    if (!lines.length) return { header: [], rows: [] };
+    const header = lines[0].split(",").map(h => h.trim());
+    const rows = lines.slice(1, 1 + maxRows).map(line => {
+      const parts = line.split(",");
+      const row = [];
+      for (let i = 0; i < header.length; i++) {
+        row.push((parts[i] || "").trim());
+      }
+      return row;
+    });
+    return { header, rows };
+  }
+
+  function csvEscape(value) {
+    if (value === null || value === undefined) return "";
+    const str = String(value);
+    if (/[",\n]/.test(str)) {
+      return '"' + str.replace(/"/g, '""') + '"';
+    }
+    return str;
+  }
+
+  function householdsToCsv(households) {
+    const header = [
+      "id", "farmerName", "gender", "zardi", "parish", "riskLevel",
+      "adoptionScore", "stumping", "rejuvenation", "shade",
+      "fertilizer", "pests", "visitedThisSeason", "lastVisit", "nextAction"
+    ];
+    const lines = [header.join(",")];
+
+    households.forEach(h => {
+      const row = [
+        h.id,
+        csvEscape(h.farmerName),
+        csvEscape(h.gender),
+        csvEscape(h.zardi),
+        csvEscape(h.parish),
+        csvEscape(h.riskLevel),
+        h.adoptionScore,
+        h.practices.stumping ? 1 : 0,
+        h.practices.rejuvenation ? 1 : 0,
+        h.practices.shade ? 1 : 0,
+        h.practices.fertilizer ? 1 : 0,
+        h.practices.pests ? 1 : 0,
+        h.visitedThisSeason ? 1 : 0,
+        csvEscape(h.lastVisit),
+        csvEscape(h.nextAction)
+      ];
+      lines.push(row.join(","));
+    });
+
+    return lines.join("\n");
+  }
+
+  function downloadCsvForHouseholds(households, filename) {
+    const csv = householdsToCsv(households);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // ---------------- ZARDI DATA MANAGEMENT ----------------
+  function initZardiDataFromSynthetic() {
+    const grouped = { Mukono: [], Mbarara: [], Bulindi: [] };
+    state.defaultSynthetic.forEach(h => {
+      if (grouped[h.zardi]) {
+        // copy object so edits to one ZARDI do not affect defaultSynthetic
+        grouped[h.zardi].push(JSON.parse(JSON.stringify(h)));
+      }
+    });
+
+    ZARDIS.forEach(z => {
+      state.zardiData[z] = {
+        households: grouped[z] || [],
+        sourceLabel: "Synthetic demo data"
+      };
+      updateZardiSourceLabel(z);
+    });
+
+    rebuildAllHouseholds();
+  }
+
+  function rebuildAllHouseholds() {
+    let all = [];
+    ZARDIS.forEach(z => {
+      const store = state.zardiData[z];
+      if (store && store.households) {
+        all = all.concat(store.households);
+      }
+    });
+    state.allHouseholds = all;
+  }
+
+  function updateZardiSourceLabel(zardi) {
+    const el = document.getElementById("label-" + zardi);
+    if (!el || !state.zardiData[zardi]) return;
+    el.textContent = state.zardiData[zardi].sourceLabel;
+  }
+
+  function useDemoForZardi(zardi) {
+    const subset = state.defaultSynthetic.filter(h => h.zardi === zardi);
+    state.zardiData[zardi].households = subset.map(h => JSON.parse(JSON.stringify(h)));
+    state.zardiData[zardi].sourceLabel = "Synthetic demo data";
+    updateZardiSourceLabel(zardi);
+    rebuildAllHouseholds();
+    applyFilters();
+  }
+
+  function startUploadForZardi(zardi) {
+    state.pendingZardi = zardi;
+    state.pendingHouseholds = null;
+    state.pendingFileName = "";
+    document.getElementById("fileInput").value = "";
+    document.getElementById("fileInput").click();
+  }
+
+  function downloadZardiData(zardi) {
+    const store = state.zardiData[zardi];
+    const rows = store && store.households ? store.households : [];
+    if (!rows.length) {
+      alert("No data loaded yet for " + zardi + " ZARDI.");
+      return;
+    }
+    downloadCsvForHouseholds(rows, "coffee_" + zardi.toLowerCase() + "_households.csv");
+  }
+
+  // ---------------- CSV PREVIEW UI ----------------
+  function hideCsvPreview() {
+    const container = document.getElementById("csvPreviewContainer");
+    if (container) container.style.display = "none";
+    document.getElementById("csvPreviewHead").innerHTML = "";
+    document.getElementById("csvPreviewBody").innerHTML = "";
+    state.pendingHouseholds = null;
+    state.pendingFileName = "";
+  }
+
+  function showCsvPreview(header, rows, fileName, zardi) {
+    const container = document.getElementById("csvPreviewContainer");
+    const head = document.getElementById("csvPreviewHead");
+    const body = document.getElementById("csvPreviewBody");
+    const title = document.getElementById("csvPreviewTitle");
+
+    head.innerHTML = "";
+    body.innerHTML = "";
+
+    const trHead = document.createElement("tr");
+    header.forEach(col => {
+      const th = document.createElement("th");
+      th.textContent = col;
+      trHead.appendChild(th);
+    });
+    head.appendChild(trHead);
+
+    rows.forEach(row => {
+      const tr = document.createElement("tr");
+      row.forEach(cell => {
+        const td = document.createElement("td");
+        td.textContent = cell;
+        tr.appendChild(td);
+      });
+      body.appendChild(tr);
+    });
+
+    if (title) {
+      title.textContent =
+        "CSV preview for " +
+        (zardi || "All ZARDIs") +
+        ": " +
+        fileName +
+        " (first " +
+        rows.length +
+        " row" +
+        (rows.length === 1 ? "" : "s") +
+        ")";
+    }
+
+    container.style.display = "block";
+    container.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // ---------------- FILTERING ----------------
+  function applyFilters() {
+    const zardi = document.getElementById("zardiFilter").value;
+    const risk = document.getElementById("riskFilter").value;
+    const search = document.getElementById("searchInput").value.trim().toLowerCase();
+
+    state.filteredHouseholds = state.allHouseholds.filter(h => {
+      if (zardi !== "ALL" && h.zardi !== zardi) return false;
+      if (risk !== "ALL" && h.riskLevel !== risk) return false;
+      if (search) {
+        const hay = (h.farmerName + " " + h.parish).toLowerCase();
+        if (!hay.includes(search)) return false;
+      }
+      return true;
+    });
+
+    updateDashboard();
+  }
+
+  // ---------------- KPIs & METRICS ----------------
+  function updateKpis() {
+    const data = state.filteredHouseholds;
+    const total = data.length;
+    const high = data.filter(h => h.riskLevel === "High").length;
+    const visited = data.filter(h => h.visitedThisSeason).length;
+
+    const kpiHouseholds = document.getElementById("kpiHouseholds");
+    const kpiHighRisk = document.getElementById("kpiHighRisk");
+    const kpiHighRiskPct = document.getElementById("kpiHighRiskPct");
+    const kpiAdoptionScore = document.getElementById("kpiAdoptionScore");
+    const kpiAdoptionComment = document.getElementById("kpiAdoptionComment");
+    const kpiCoverage = document.getElementById("kpiCoverage");
+    const kpiCoverageText = document.getElementById("kpiCoverageText");
+    const kpiZardiLabel = document.getElementById("kpiZardiLabel");
+
+    kpiHouseholds.textContent = String(total);
+    kpiHighRisk.textContent = String(high);
+    const pctHigh = total ? (high / total) * 100 : 0;
+    kpiHighRiskPct.textContent = pctHigh.toFixed(1) + "% of sample";
+
+    let avgScore = 0;
+    if (total) {
+      avgScore = data.reduce((sum, h) => sum + h.adoptionScore, 0) / total;
+    }
+    kpiAdoptionScore.textContent = avgScore.toFixed(0);
+    if (avgScore >= 75) {
+      kpiAdoptionComment.textContent = "Good compliance – reinforce and document best performers.";
+      kpiAdoptionComment.className = "kpi-delta good";
+    } else if (avgScore >= 50) {
+      kpiAdoptionComment.textContent = "Moderate compliance – targeted reinforcement needed.";
+      kpiAdoptionComment.className = "kpi-delta";
+    } else {
+      kpiAdoptionComment.textContent = "Low compliance – prioritise intensive follow-up.";
+      kpiAdoptionComment.className = "kpi-delta bad";
+    }
+
+    const coverage = total ? (visited / total) * 100 : 0;
+    kpiCoverage.textContent = coverage.toFixed(0) + "%";
+    kpiCoverageText.textContent = visited + " / " + total + " households visited";
+
+    const zardiValue = document.getElementById("zardiFilter").value;
+    const riskValue = document.getElementById("riskFilter").value;
+    let zardiText = zardiValue === "ALL" ? "All ZARDIs" : zardiValue;
+    if (riskValue !== "ALL") zardiText += " · " + riskValue + " risk only";
+    kpiZardiLabel.textContent = zardiText;
+  }
+
+  function getTopPracticeGap() {
+    const counters = {
+      stumping: 0,
+      rejuvenation: 0,
+      shade: 0,
+      fertilizer: 0,
+      pests: 0
+    };
+    state.filteredHouseholds.forEach(h => {
+      Object.entries(h.practices).forEach(([key, val]) => {
+        if (!val) counters[key]++;
+      });
+    });
+    const entries = Object.entries(counters);
+    entries.sort((a, b) => b[1] - a[1]);
+    if (!entries.length || entries[0][1] === 0) return "No major gaps in current filter";
+    const map = {
+      stumping: "Stumping",
+      rejuvenation: "Rejuvenation",
+      shade: "Shade integration",
+      fertilizer: "Fertilizer regime",
+      pests: "Pest & disease control"
+    };
+    const [key, count] = entries[0];
+    return map[key] + " (" + count + " households with gaps)";
+  }
+
+  function updateMiniMeta() {
+    const metaTopGap = document.getElementById("metaTopGap");
+    const metaMedianScore = document.getElementById("metaMedianScore");
+    const metaFilterSummary = document.getElementById("metaFilterSummary");
+
+    metaTopGap.textContent = getTopPracticeGap();
+
+    const scores = state.filteredHouseholds
+      .map(h => h.adoptionScore)
+      .sort((a, b) => a - b);
+    let median = "-";
+    if (scores.length) {
+      const mid = Math.floor(scores.length / 2);
+      median =
+        scores.length % 2 === 0
+          ? ((scores[mid - 1] + scores[mid]) / 2).toFixed(0)
+          : scores[mid].toFixed(0);
+    }
+    metaMedianScore.textContent = median;
+
+    const zardiValue = document.getElementById("zardiFilter").value;
+    const riskValue = document.getElementById("riskFilter").value;
+    let txt = (zardiValue === "ALL" ? "All ZARDIs" : zardiValue) + " · ";
+    txt += riskValue === "ALL" ? "All risks" : riskValue + " risk";
+    metaFilterSummary.textContent = txt;
+  }
+
+  // ---------------- CHARTS ----------------
+  function renderRiskChart() {
+    const ctx = document.getElementById("riskChart").getContext("2d");
+    if (state.riskChart) state.riskChart.destroy();
+
+    const data = state.filteredHouseholds;
+    const high = data.filter(h => h.riskLevel === "High").length;
+    const medium = data.filter(h => h.riskLevel === "Medium").length;
+    const low = data.filter(h => h.riskLevel === "Low").length;
+
+    state.riskChart = new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: ["High risk", "Medium risk", "Low risk"],
+        datasets: [{
+          data: [high, medium, low],
+          borderWidth: 1,
+          borderColor: "#ffffff",
+          backgroundColor: [
+            "rgba(248,113,113,0.9)",
+            "rgba(250,204,21,0.9)",
+            "rgba(34,197,94,0.9)"
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: {
+              color: "#4b5563",
+              font: { size: 10, family: "Times New Roman" }
+            }
+          }
+        },
+        cutout: "58%"
+      }
+    });
+  }
+
+  function renderZardiChart() {
+    const ctx = document.getElementById("zardiChart").getContext("2d");
+    if (state.zardiChart) state.zardiChart.destroy();
+
+    const zardis = ZARDIS;
+    const avgScores = zardis.map(z => {
+      const store = state.zardiData[z];
+      const subset = store && store.households ? store.households : [];
+      if (!subset.length) return 0;
+      const total = subset.reduce((sum, h) => sum + h.adoptionScore, 0);
+      return total / subset.length;
+    });
+
+    state.zardiChart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: zardis,
+        datasets: [{
+          label: "Average adoption score",
+          data: avgScores,
+          borderWidth: 1,
+          backgroundColor: "rgba(37,99,235,0.8)"
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          x: {
+            ticks: { color: "#4b5563", font: { size: 10, family: "Times New Roman" } },
+            grid: { display: false }
+          },
+          y: {
+            beginAtZero: true,
+            max: 100,
+            ticks: { color: "#6b7280", font: { size: 10, family: "Times New Roman" } },
+            grid: { color: "rgba(209,213,219,0.8)" }
+          }
+        }
+      }
+    });
+  }
+
+  // ---------------- TABLE ----------------
+  function renderTable() {
+    const tbody = document.getElementById("householdTableBody");
+    tbody.innerHTML = "";
+
+    const ordered = [...state.filteredHouseholds].sort((a, b) => {
+      const rank = { High: 0, Medium: 1, Low: 2 };
+      if (rank[a.riskLevel] !== rank[b.riskLevel]) {
+        return rank[a.riskLevel] - rank[b.riskLevel];
+      }
+      return a.adoptionScore - b.adoptionScore;
+    });
+
+    ordered.forEach(h => {
+      const tr = document.createElement("tr");
+
+      const tdFarmer = document.createElement("td");
+      tdFarmer.textContent = h.farmerName;
+      tr.appendChild(tdFarmer);
+
+      const tdZardi = document.createElement("td");
+      tdZardi.textContent = h.zardi;
+      tr.appendChild(tdZardi);
+
+      const tdParish = document.createElement("td");
+      tdParish.textContent = h.parish;
+      tr.appendChild(tdParish);
+
+      const tdRisk = document.createElement("td");
+      const riskSpan = document.createElement("span");
+      riskSpan.classList.add("risk-pill");
+      if (h.riskLevel === "High") riskSpan.classList.add("risk-high");
+      else if (h.riskLevel === "Medium") riskSpan.classList.add("risk-medium");
+      else riskSpan.classList.add("risk-low");
+      riskSpan.textContent = h.riskLevel;
+      tdRisk.appendChild(riskSpan);
+      tr.appendChild(tdRisk);
+
+      const tdScore = document.createElement("td");
+      tdScore.textContent = String(h.adoptionScore);
+      tr.appendChild(tdScore);
+
+      const tdPractices = document.createElement("td");
+      const pc = document.createElement("div");
+      pc.className = "practice-cell";
+
+      const map = [
+        ["stumping", "Stump"],
+        ["rejuvenation", "Rejv"],
+        ["shade", "Shade"],
+        ["fertilizer", "Fert"],
+        ["pests", "P&D"]
+      ];
+      map.forEach(([key, label]) => {
+        const span = document.createElement("span");
+        span.classList.add("practice-tag");
+        if (h.practices[key]) span.classList.add("practice-ok");
+        else span.classList.add("practice-gap");
+        span.textContent = label;
+        pc.appendChild(span);
+      });
+
+      tdPractices.appendChild(pc);
+      tr.appendChild(tdPractices);
+
+      const tdLast = document.createElement("td");
+      tdLast.textContent = h.lastVisit || "–";
+      tr.appendChild(tdLast);
+
+      const tdNext = document.createElement("td");
+      tdNext.textContent = h.nextAction;
+      tr.appendChild(tdNext);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ---------------- MAIN UPDATE ----------------
+  function updateDashboard() {
+    updateKpis();
+    updateMiniMeta();
+    renderRiskChart();
+    renderZardiChart();
+    renderTable();
+  }
+
+  // ---------------- INIT & EVENTS ----------------
+  document.addEventListener("DOMContentLoaded", () => {
+    state.defaultSynthetic = loadSyntheticHouseholds();
+    initZardiDataFromSynthetic();
+    state.filteredHouseholds = [...state.allHouseholds];
+    updateDashboard();
+    hideCsvPreview();
+
+    // Filter listeners
+    document.getElementById("zardiFilter").addEventListener("change", applyFilters);
+    document.getElementById("riskFilter").addEventListener("change", applyFilters);
+    document.getElementById("searchInput").addEventListener("input", applyFilters);
+
+    // All ZARDIs card: focus & download & reset
+    document.getElementById("card-ALL").addEventListener("click", (e) => {
+      if (e.target.closest("button")) return;
+      document.getElementById("zardiFilter").value = "ALL";
+      applyFilters();
+    });
+
+    document.getElementById("btnAllView").addEventListener("click", (e) => {
+      e.stopPropagation();
+      document.getElementById("zardiFilter").value = "ALL";
+      applyFilters();
+    });
+
+    document.getElementById("btnAllDownload").addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (!state.allHouseholds.length) {
+        alert("No data available to download.");
+        return;
+      }
+      downloadCsvForHouseholds(state.allHouseholds, "coffee_all_zardis_households.csv");
+    });
+
+    document.getElementById("btnAllDemo").addEventListener("click", (e) => {
+      e.stopPropagation();
+      initZardiDataFromSynthetic();
+      state.filteredHouseholds = [...state.allHouseholds];
+      applyFilters();
+    });
+
+    // Per-ZARDI cards: click to focus view
+    ZARDIS.forEach(z => {
+      const card = document.getElementById("card-" + z);
+      if (card) {
+        card.addEventListener("click", (e) => {
+          if (e.target.closest("button")) return;
+          document.getElementById("zardiFilter").value = z;
+          applyFilters();
+        });
+
+        const buttons = card.querySelectorAll("button[data-zardi='" + z + "']");
+        buttons.forEach(btn => {
+          const action = btn.getAttribute("data-action");
+          if (action === "demo") {
+            btn.addEventListener("click", (ev) => {
+              ev.stopPropagation();
+              useDemoForZardi(z);
+            });
+          } else if (action === "upload") {
+            btn.addEventListener("click", (ev) => {
+              ev.stopPropagation();
+              startUploadForZardi(z);
+            });
+          } else if (action === "download") {
+            btn.addEventListener("click", (ev) => {
+              ev.stopPropagation();
+              downloadZardiData(z);
+            });
+          }
+        });
+      }
+    });
+
+    // File input handler (CSV upload)
+    document.getElementById("fileInput").addEventListener("change", (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (!state.pendingZardi) {
+        alert("No ZARDI selected for this upload.");
+        return;
+      }
+      hideCsvPreview();
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const text = e.target.result;
+          const preview = buildCsvPreview(text, 5);
+          if (!preview.header.length || !preview.rows.length) {
+            alert("CSV appears to be empty or incorrectly formatted.");
+            return;
+          }
+          const households = parseCsvToHouseholds(text, state.pendingZardi);
+          if (!households.length) {
+            alert("CSV could not be parsed into households. Please check the format.");
+            return;
+          }
+          state.pendingHouseholds = households;
+          state.pendingFileName = file.name;
+          showCsvPreview(preview.header, preview.rows, file.name, state.pendingZardi);
+        } catch (err) {
+          console.error(err);
+          alert("Error reading CSV file. Please check the format.");
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    // Confirm / cancel preview
+    document.getElementById("btnConfirmLoad").addEventListener("click", () => {
+      if (!state.pendingZardi || !state.pendingHouseholds || !state.pendingHouseholds.length) {
+        alert("No CSV is currently in preview.");
+        return;
+      }
+      state.zardiData[state.pendingZardi].households = state.pendingHouseholds;
+      state.zardiData[state.pendingZardi].sourceLabel = "CSV: " + (state.pendingFileName || "uploaded file");
+      updateZardiSourceLabel(state.pendingZardi);
+      rebuildAllHouseholds();
+      hideCsvPreview();
+      applyFilters();
+    });
+
+    document.getElementById("btnCancelPreview").addEventListener("click", () => {
+      hideCsvPreview();
+    });
+  });
+</script>
+</body>
+</html>
